@@ -4,7 +4,6 @@ import requests
 import re
 from docopt import docopt
 from prettytable import PrettyTable
-
 #python
 #from requests.packages.urllib3.exceptions import InsecureRequestWarning
 #requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -15,8 +14,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class TrainsCollection(object):
     def __init__(self, available_trains, options, stations):
-        self.header = ('车次 车站 时间 历时 特等座 一等 二等 高级软卧 软卧 动卧 硬卧 '
-                       + '软座 硬座 无座 备注').split()
+        self.header = '车次 车站 时间 历时 商务座 一等座 二等座 高级软卧 软卧一等 动卧 硬卧二等 软座 硬座 无座 其他 备注 '.split()
         self.available_trains = available_trains
         self.options = options
         self.stations = stations
@@ -71,14 +69,7 @@ class TrainsCollection(object):
 
 # 得到station和其字母代号的字典
 def get_stations():
-    url_gs = 'https://kyfw.12306.cn/otn/leftTicket/init'
-    resp_gs = requests.get(url_gs, verify=False)
-
-    pattern = r'/js/framework/station_name.js?station_version=(\d\.\d+)'
-    station_version = re.findall(pattern, resp_gs.text)
-
-    url_stations = ('https://kyfw.12306.cn/otn/resources/js/framework/station_'
-                    + 'name.js?station_version={0}'.format(station_version))
+    url_stations = 'https://kyfw.12306.cn/otn/resources/js/framework/station_name.js?station_version=1.9092'
     #下载数据，无需验证书
     resp_stations = requests.get(url_stations, verify=False)
     #正则匹配中文和大写字码
@@ -108,9 +99,10 @@ Example:
     to_station = stations.get(arguments['<to>'])
     date = arguments['<date>']
     # url = https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.train_date=2019-05-26&leftTicketDTO.from_station=HZH&leftTicketDTO.to_station=SHH&purpose_codes=ADULT
-    url = ('https://kyfw.12306.cn/otn/leftTicket/query?leftTicketDTO.'
-           + 'train_date={0}&leftTicketDTO.from_station={1}&leftTicketDTO.'
-           + 'to_station={2}&purpose_codes=ADULT').format(date, from_station, to_station)
+    url = ('https://kyfw.12306.cn/otn/leftTicket/queryZ?'
+           'leftTicketDTO.train_date={}&'
+           'leftTicketDTO.from_station={}&leftTicketDTO.to_station={}&purpose_codes=ADULT').format(date, from_station, to_station)
+
     r = requests.get(url, verify=False)
     available_trains = r.json()['data']['result']
     available_trains = [i.split('|') for i in available_trains]
